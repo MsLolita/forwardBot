@@ -26,7 +26,7 @@ function callBot() {
         ctx.replyWithHTML('Welcome to the <b>ForwardBot</b>\n' +
             `Hi to use you need:\n
         1)Add bot to group as admin\n
-        2)Write chat id(\/chatId looks as: -183123783284)\n
+        2)Write chat id(\/chatId looks as: -1001328909412)\n
         3)Enjoy free time`, getMainMenu());
     });
 
@@ -62,6 +62,9 @@ function callBot() {
     bot.action(['true', 'false'], ctx => {
         if (ctx.callbackQuery.data === 'true') {
             sendPost(ctx);
+            sending = setInterval(() => {
+                sendPost(ctx);
+            }, timeBetweenPosts * 60000);
             ctx.editMessageText('Sending!!!');
         } else {
             ctx.deleteMessage();
@@ -73,15 +76,13 @@ function callBot() {
 }
 
 function sendPost(ctx) {
-    sending = setInterval(() => {
         getUrl(url, (urlCallback) => {
             bot.telegram.sendPhoto(chatId,
                 {url: urlCallback},
                 {caption: "Funny Picture"});
             ctx.reply('Send!');
             url = urlCallback;
-        })
-    }, timeBetweenPosts * 60000);
+        });
 }
 
 function replyAnyText(ctx) {
