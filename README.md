@@ -9,7 +9,7 @@ Options:
 - Time beetween posts;
 - Type Of media (video, photo)
 
-How it look like:
+How does it look like:
 
 ![Commands](https://user-images.githubusercontent.com/58307006/106384573-38acd700-63d4-11eb-9553-c8c049abc627.png)
 
