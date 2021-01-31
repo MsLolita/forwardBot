@@ -11,14 +11,14 @@ const telegramBot = express();
 const bot = new Telegraf(TOKEN);
 
 class ForwardBot {
-    static site;
+    static site = 'https://9gag.com/fresh';// By default from this site
     static #chatId;
-    static timeBetweenPosts = 5;
-    static typeMedia;
+    static timeBetweenPosts = 5; // It will post every 5 munutes
+    static typeMedia = 'photo'; // default media
 
     static async getUrl(callback) {
         const postSession = new ScrapeMedia(this.site, this.typeMedia);
-        const urlOfMedia = await postSession.defineSite(this.site);
+        const urlOfMedia = await postSession.defineSite();
         callback(urlOfMedia);
     }
 
@@ -33,48 +33,49 @@ class ForwardBot {
         3)Enjoy free time`, getMainMenu());
         });
 
-        bot.hears(/\/chatId|Write chat id/, ctx=> {
-            ctx.reply('Chat id:');
-        });
+        bot.hears(/\/chatId|Chat id/, ctx =>
+            ctx.reply('Chat id:')
+        );
 
-        bot.hears(/\/interval|Write time between posts/,ctx => {
+        bot.hears(/\/site|Site/, ctx =>
+            ctx.reply('Site:')
+        );
+
+        bot.hears(/\/interval|Time between posts/,ctx => {
             ctx.reply(`During what time I must post?\n
         From 5 minutes till 720 minutes(12 hours).\n
         For instance, if you want that I post every hour simply type: 60\n
-        In minutes: `);
+        In minutes:`);
         })
 
-        bot.hears(/\/site|Write a site/, ctx=> {
-            ctx.reply('Site:');
-        });
+        bot.hears(/\/type|Type of Media/, ctx =>
+            ctx.reply('Type of Media(photo or video):')
+        );
 
         bot.hears(/\/send|\/stop|Stop posting|Start to send/, ctx=> {
-            (!this.#chatId ? ctx.reply('chatId is empty! I don\'t know in what chat send a picture' ) : true);
-            if (_sending) {
+            if (_sending)
                 clearInterval(_sending);
-            }
 
-            if (/\/send|Start to send/.test(ctx.update.message.text) && this.#chatId ) {
+            if (!this.#chatId || !this.site)
+                ctx.reply(`Please write a \'${this.#chatId ? 'Site' : 'Chat id'}\'! I don\'t know ${this.#chatId ? 'where I should take a media' : 'in what chat send a picture'}`);
+            else if (/\/send|Start to send/.test(ctx.update.message.text))
                 ctx.reply('Send?', askAgainYesNo());
-            } else if (/\/stop|Stop posting/.test(ctx.update.message.text)) {
+            else if (/\/stop|Stop posting/.test(ctx.update.message.text))
                 ctx.reply('Stopping!');
-            }
         });
 
-        bot.on('text', ctx =>{
-            this.replyAnyText(ctx);
-        });
+        bot.on('text', ctx =>
+            this.replyAnyText(ctx)
+        );
 
         bot.action(['true', 'false'], ctx => {
-            if (ctx.callbackQuery.data === 'true') {
+            if (ctx.callbackQuery.data) {
                 this.sendPost(ctx);
-                _sending = setInterval(() => {
-                    this.sendPost(ctx);
-                }, this.timeBetweenPosts * 60000);
+                _sending = setInterval(() =>
+                    this.sendPost(ctx)
+                , this.timeBetweenPosts * 60000);
                 ctx.editMessageText('Sending!!!');
-            } else {
-                ctx.deleteMessage();
-            }
+            } else ctx.deleteMessage();
         })
 
         bot.launch();
@@ -83,11 +84,8 @@ class ForwardBot {
 
     static sendPost(ctx) {
         this.getUrl((urlCallback) => {
-            console.log(urlCallback)
             ctx.telegram[`send${this.typeMedia.toUpperCase().slice(0, 1)}${this.typeMedia.slice(1)}`](this.#chatId, {
                 url: urlCallback
-            }, {
-                caption: "Funny Video"
             });
             ctx.reply('Send!');
         });
@@ -98,10 +96,16 @@ class ForwardBot {
         if (/^-[0-9]{13}$/.test(msg)) {
             this.#chatId = msg;
             ctx.reply('Okeyyyy. Looks correct!');
-        } else if (/^[0-9]{1,3}$/.test(msg) && msg >= 5 && msg <= 720 ){
+        } else if (/^https?:\/\//.test(msg) && msg.length > 9) {
+            this.site = msg;
+            ctx.reply(`Yeah, I add this site!`);
+        } else if (/^[0-9]{1,3}$/.test(msg) && msg >= 5 && msg <= 720 ) {
             this.timeBetweenPosts = msg;
             ctx.reply(`I will post every ${msg} minutes!`);
-        }else ctx.reply('Sorry but you don\'t write right!?');
+        }else if (/^video|photo$/.test(msg)) {
+            this.typeMedia = msg;
+            ctx.reply(`I will post some ${this.typeMedia} every ${this.timeBetweenPosts} minutes!`);
+        } else ctx.reply('Sorry but you don\'t write right!?');
     }
 }
 
