@@ -36,7 +36,7 @@ export default class ScrapeMedia {
 
         this.#page = await this.#browser.newPage();
 
-        await page.setUserAgent(userAgent.toString());
+        await this.#page.setUserAgent(userAgent.toString()); // helps avoid captcha
     }
 
     async getMediaGag(_urlMedia) {
