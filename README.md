@@ -1,6 +1,6 @@
 # forwardBot
 
-## This bot can send regularly (from 5 to 720 minutes) a picture or video to a group or chat, by scraping posts from facebook, instagram, 9gag.
+## This bot can regularly send(from 5 to 720 minutes) a picture or video to a group or chat, by scraping posts from facebook, instagram, 9gag.
 
 You need to write:
 - site (facebook or instagram group, 9gag newsfeed);
